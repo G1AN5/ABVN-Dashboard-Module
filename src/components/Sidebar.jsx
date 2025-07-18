@@ -4,8 +4,7 @@ import {
   LayoutDashboard, BarChart3, FolderKanban, DollarSign, FilePlus2, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCircle2 
 } from 'lucide-react';
 
-export default function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+export default function Sidebar({ isCollapsed, setIsCollapsed }) {
   const [isFinancialsOpen, setIsFinancialsOpen] = useState(false);
 
   const scrollProps = {
@@ -24,18 +23,27 @@ export default function Sidebar() {
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
 
-        {/* User Profile */}
         <div className={`flex items-center transition-all duration-300 px-4 pt-24 pb-8 ${isCollapsed ? 'justify-center' : ''}`}>
           <UserCircle2 size={isCollapsed ? 36 : 48} className="text-gray-600 flex-shrink-0" />
           {!isCollapsed && (
-            <div className="ml-3">
-              <p className="font-bold text-gray-800 leading-tight">Username</p>
-              <p className="text-sm text-gray-600 leading-tight">user@email.com</p>
+            <div className="ml-3 overflow-hidden">
+              {/* FIX: Added 'truncate' class to handle long text. Also added a title attribute for hover tooltip. */}
+              <p 
+                className="font-bold text-gray-800 leading-tight truncate" 
+                title="VOLUNTEER MAPUANS"
+              >
+                VOLUNTEER MAPUANS
+              </p>
+              <p 
+                className="text-sm text-gray-600 leading-tight truncate"
+                title="volunteermapuans@mymail.mapua.edu.ph"
+              >
+                volunteermapuans@mymail.mapua.edu.ph
+              </p>
             </div>
           )}
         </div>
 
-        {/* Navigation */}
         <nav className="flex-grow text-gray-700 overflow-y-auto px-4">
           <Link to="dashboard" {...scrollProps} className={`${scrollProps.className} hover:bg-sidebar-lighter`}>
             <LayoutDashboard size={20} className="flex-shrink-0" />

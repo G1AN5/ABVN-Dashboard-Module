@@ -1,18 +1,75 @@
 import React from 'react';
 import SectionWrapper from '../components/SectionWrapper';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Bar, Doughnut } from 'react-chartjs-2';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 export default function DashboardSection() {
+  const barChartData = {
+    labels: ['2021', '2022', '2023', '2024', '2025'],
+    datasets: [
+      {
+        label: 'Programs',
+        data: [3, 6, 4, 7, 8],
+        backgroundColor: '#1fafbb',
+        borderRadius: 5,
+      },
+      {
+        label: 'Projects',
+        data: [2, 5, 3, 6, 10],
+        backgroundColor: '#f550a1',
+        borderRadius: 5,
+      },
+    ],
+  };
+
+  const doughnutChartData = {
+    labels: ['Project 1', 'Project 2', 'Program 1'],
+    datasets: [
+      {
+        label: 'Fund Allocation',
+        data: [12.5, 25, 62.5],
+        backgroundColor: ['#1fafbb', '#f550a1', '#ffe5c1'],
+        borderColor: ['#ffffff', '#ffffff', '#ffffff'],
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const barChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      title: { display: true, text: 'Number of Programs and Projects Implemented' },
+    },
+  };
+
+  const doughnutChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { position: 'right' },
+      title: { display: true, text: 'Fund Allocation (%)' },
+    },
+    cutout: '60%',
+  };
+
   return (
     <SectionWrapper name="dashboard" title="Dashboard">
-      <p className="text-gray-600 mb-4">
-                This is the main dashboard, providing a high-level overview of your organization's partnership with AngatBuhay. Key metrics, fund allocations, and program statuses are displayed here for quick access. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla. This is the main dashboard, providing a high-level overview of your organization's partnership with AngatBuhay. Key metrics, fund allocations, and program statuses are displayed here for quick access. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.
-      </p>
-      <div className="mt-6 h-96 bg-gray-200 rounded-lg flex items-center justify-center">
-        <span className="text-gray-500">Main Analytics and Graphs Area</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-gray-50 p-4 rounded-lg">
+          <Bar options={barChartOptions} data={barChartData} />
+          <p className="text-center text-sm text-gray-600 mt-2">
+            This chart shows the growth of your organization's initiatives over the past five years, distinguishing between comprehensive programs and specific projects.
+          </p>
+        </div>
+        <div className="lg:col-span-1 bg-gray-50 p-4 rounded-lg">
+          <Doughnut data={doughnutChartData} options={doughnutChartOptions} />
+          <p className="text-center text-sm text-gray-600 mt-2">
+            This chart illustrates how the current funds from AngatBuhay are distributed across your key ongoing initiatives.
+          </p>
+        </div>
       </div>
-       <p className="text-gray-600 mt-4">
-                Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero. Sed dignissim lacinia nunc. Curabitur tortor. Pellentesque nibh. Aenean quam. In scelerisque sem at dolor. Maecenas mattis. Sed convallis tristique sem. Proin ut ligula vel nunc egestas porttitor. Morbi lectus risus, iaculis vel, suscipit quis, luctus non, massa. Fusce ac turpis quis ligula lacinia aliquet. Mauris ipsum. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero. Sed dignissim lacinia nunc. Curabitur tortor. Pellentesque nibh. Aenean quam. In scelerisque sem at dolor. Maecenas mattis. Sed convallis tristique sem. Proin ut ligula vel nunc egestas porttitor. Morbi lectus risus, iaculis vel, suscipit quis, luctus non, massa. Fusce ac turpis quis ligula lacinia aliquet. Mauris ipsum.
-      </p>
     </SectionWrapper>
   );
 };

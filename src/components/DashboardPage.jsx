@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import DashboardSection from '../sections/DashboardSection';
 import RecentActivitySection from '../sections/RecentActivitySection';
@@ -9,19 +9,20 @@ import SubmitReportSection from '../sections/SubmitReportSection';
 import AccountSettingsSection from '../sections/AccountSettingsSection';
 
 export default function DashboardPage() {
+  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   return (
-    // The main container for the dashboard view
     <div className="flex">
-      {/* The collapsible sidebar component */}
-      <Sidebar />
-      {/* The main content area that will scroll */}
-      <div className="flex-grow p-4 md:p-10 ml-64 transition-all duration-300">
+      {/* Pass the state and the function to update it down to the Sidebar */}
+      <Sidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
+      
+      {/* FIX: The left margin (ml) is now dynamic based on the sidebar's state */}
+      <div className={`flex-grow p-4 md:p-10 transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
         <div className="pt-20">
             <div className="bg-angat-blue text-white p-6 rounded-lg mb-10">
               <h1 className="text-3xl font-bold">WELCOME, USER!</h1>
             </div>
             
-            {/* Sections in order */}
             <DashboardSection />
             <RecentActivitySection />
             <ProgramsManagementSection />
