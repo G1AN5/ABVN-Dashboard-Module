@@ -28,15 +28,14 @@ export default function TopNav({ onNavigate, currentPage }) {
           <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
             {navItems.map(item => {
               const isHomeActive = item === 'Home' && currentPage === 'home';
-              const isPartnershipActive = item === 'Partnership' && currentPage === 'partnership';
+              const isPartnershipActive = item === 'Partnership' && ['login', 'register', 'dashboard'].includes(currentPage);
               const isActive = isHomeActive || isPartnershipActive;
 
               return (
                 <a 
                   key={item} 
                   href="#" 
-                  // FIX: Changed to text-xs and adjusted padding
-                  className={`px-4 py-2 rounded-lg text-white text-xs transition-colors duration-300 ${isActive ? 'bg-angat-pink' : 'hover:bg-white/20'}`} 
+                  className={`px-4 py-3 rounded-lg text-white text-xs transition-colors duration-300 ${isActive ? 'bg-angat-pink' : 'hover:bg-white/20'}`} 
                   onClick={() => {
                     if (item === 'Home') onNavigate('home');
                     if (item === 'Partnership') onNavigate('partnership');

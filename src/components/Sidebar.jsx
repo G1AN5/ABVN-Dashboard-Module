@@ -11,24 +11,20 @@ export default function Sidebar() {
   const scrollProps = {
     spy: true,
     smooth: true,
-    offset: -110, // FIX: Fine-tuned the offset for more accurate highlighting
+    offset: -110, 
     duration: 500,
     className: "flex items-center p-3 my-1 rounded-lg cursor-pointer transition-colors duration-200",
     activeClass: "bg-angat-blue text-white shadow-lg"
   };
 
   return (
-    // FIX: Removed top padding from here. It's now handled by the main content div.
     <aside className={`bg-sidebar-light fixed top-0 h-screen transition-all duration-300 ease-in-out z-30 ${isCollapsed ? 'w-20' : 'w-64'}`}>
       <div className="flex flex-col h-full">
-        
-        {/* FIX: Added pt-24 to this button to align it correctly with the content */}
         <button onClick={() => setIsCollapsed(!isCollapsed)} className="absolute -right-4 top-24 bg-white p-2 rounded-full shadow-lg border">
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
 
         {/* User Profile */}
-        {/* FIX: Added pt-24 to this container to push it down below the navbar */}
         <div className={`flex items-center transition-all duration-300 px-4 pt-24 pb-8 ${isCollapsed ? 'justify-center' : ''}`}>
           <UserCircle2 size={isCollapsed ? 36 : 48} className="text-gray-600 flex-shrink-0" />
           {!isCollapsed && (

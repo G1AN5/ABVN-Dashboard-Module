@@ -15,15 +15,13 @@ export default function DashboardPage() {
       {/* The collapsible sidebar component */}
       <Sidebar />
       {/* The main content area that will scroll */}
-      {/* FIX: Removed pt-24 from here and moved it to the inner div */}
       <div className="flex-grow p-4 md:p-10 ml-64 transition-all duration-300">
-        {/* FIX: Added pt-24 here to correctly offset for the navbar */}
         <div className="pt-20">
             <div className="bg-angat-blue text-white p-6 rounded-lg mb-10">
               <h1 className="text-3xl font-bold">WELCOME, USER!</h1>
             </div>
             
-            {/* Sections in correct order */}
+            {/* Sections in order */}
             <DashboardSection />
             <RecentActivitySection />
             <ProgramsManagementSection />
