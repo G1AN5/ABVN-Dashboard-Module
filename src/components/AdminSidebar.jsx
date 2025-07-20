@@ -20,7 +20,7 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed }) {
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
 
-        <div className={`flex items-center transition-all duration-300 px-4 pt-24 pb-8 ${isCollapsed ? 'justify-center' : ''}`}>
+        <div className={`flex items-center transition-all duration-300 px-4 pt-28 pb-8 ${isCollapsed ? 'justify-center' : ''}`}>
           <Shield size={isCollapsed ? 36 : 48} className="text-angat-pink flex-shrink-0" />
           {!isCollapsed && (
             <div className="ml-3 overflow-hidden">

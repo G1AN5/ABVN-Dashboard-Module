@@ -48,7 +48,7 @@ const FileInput = ({ label, span = 'md:col-span-2' }) => (
 
 export default function RegisterPage() {
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col items-center pt-32 pb-16 px-4">
+    <div className="bg-gray-50 flex flex-col items-center px-4 py-12 min-h-[calc(100vh-5rem)]">
       
       {/* --- Section 1: Account Creation (Blue box, Pink line) --- */}
       <FormSection title="Have a partnership with us today!" bgColor="bg-angat-blue" textColor="text-white" borderColor="border-angat-pink">

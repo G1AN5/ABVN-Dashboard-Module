@@ -18,7 +18,7 @@ export default function App() {
     }
   };
 
-  // FIX: This function now correctly handles routing based on the user's role.
+  // This function handles routing based on the user's role.
   const handleLoginSuccess = (role) => {
     setUserRole(role);
     if (role === 'admin') {

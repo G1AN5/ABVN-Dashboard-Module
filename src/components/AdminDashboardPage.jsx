@@ -9,11 +9,11 @@ export default function AdminDashboardPage() {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <div className="flex">
+    <div className="flex min-h-[calc(100vh-5rem)]">
       <AdminSidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
       
       <div className={`flex-grow p-4 md:p-10 transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
-        <div className="pt-20">
+        <div>
             <div className="bg-angat-pink text-white p-6 rounded-lg mb-10">
               <h1 className="text-3xl font-bold">ADMINISTRATOR DASHBOARD</h1>
             </div>
