@@ -1,0 +1,68 @@
+/* AdminSidebar Vanilla CSS */
+#admin-sidebar {
+  width: 16rem;
+  min-width: 5rem;
+  background: #1f2937;
+  color: #fff;
+  position: fixed;
+  top: 0;
+  height: 100vh;
+  z-index: 30;
+  transition: width 0.3s;
+}
+#admin-sidebar.collapsed {
+  width: 5rem;
+}
+#admin-sidebar .sidebar-icon {
+  font-size: 20px;
+  display: inline-block;
+  width: 20px;
+  text-align: center;
+}
+#admin-sidebar .sidebar-link {
+  transition: background 0.2s, color 0.2s;
+}
+#admin-sidebar .sidebar-link.active, #admin-sidebar .sidebar-link:active, #admin-sidebar .sidebar-link:focus {
+  background: #e11d48;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(225,29,72,0.2);
+}
+#admin-sidebar .sidebar-section-toggle {
+  user-select: none;
+}
+#admin-sidebar .sidebar-chevron {
+  transition: transform 0.3s;
+  display: inline-block;
+}
+#admin-sidebar .sidebar-chevron.open {
+  transform: rotate(90deg);
+}
+#admin-sidebar .sidebar-shield {
+  color: #e11d48;
+}
+#admin-sidebar .hover\:bg-gray-700:hover {
+  background: #374151;
+}
+#admin-sidebar hr {
+  border-color: #4b5563;
+}
+#admin-sidebar .text-gray-400 {
+  color: #9ca3af;
+}
+#admin-sidebar .text-gray-300 {
+  color: #d1d5db;
+}
+#admin-sidebar .font-bold {
+  font-weight: bold;
+}
+#admin-sidebar .font-semibold {
+  font-weight: 600;
+}
+#admin-sidebar .rounded-lg {
+  border-radius: 0.5rem;
+}
+#admin-sidebar .truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,66 @@
+<!-- AdminSidebar Vanilla HTML -->
+<aside id="admin-sidebar" class="bg-gray-800 text-white fixed top-0 h-screen transition-all duration-300 ease-in-out z-30 w-64">
+  <div class="flex flex-col h-full">
+    <button id="sidebar-toggle" class="absolute -right-4 top-24 bg-white text-gray-800 p-2 rounded-full shadow-lg border">
+      <span id="sidebar-toggle-icon">&#x25C0;</span>
+    </button>
+    <div class="flex items-center transition-all duration-300 px-4 pt-28 pb-8" id="sidebar-user-info">
+      <span class="sidebar-shield text-angat-pink flex-shrink-0" style="font-size:48px;">&#128737;</span>
+      <div class="ml-3 overflow-hidden">
+        <p class="font-bold leading-tight truncate" title="Admin User">Admin User</p>
+        <p class="text-sm text-gray-400 leading-tight truncate" title="admin@angatbuhay.ph">admin@angatbuhay.ph</p>
+      </div>
+    </div>
+    <nav class="flex-grow overflow-y-auto px-4">
+      <div>
+        <div class="sidebar-section-toggle flex items-center justify-between p-3 my-1 rounded-lg cursor-pointer hover:bg-gray-700" data-section="org">
+          <div class="flex items-center">
+            <span class="sidebar-icon">&#128101;</span>
+            <span class="ml-4 font-semibold text-sm">Organization Mgt.</span>
+          </div>
+          <span class="sidebar-chevron" data-section="org">&#9654;</span>
+        </div>
+        <div class="sidebar-section-content pl-8 text-gray-300" id="org-section">
+          <a href="#all-orgs" class="sidebar-link flex items-center p-3 my-1 rounded-lg hover:bg-gray-700"><span class="text-sm">All Organizations</span></a>
+          <a href="#review-apps" class="sidebar-link flex items-center p-3 my-1 rounded-lg hover:bg-gray-700"><span class="text-sm">Review Applications</span></a>
+        </div>
+      </div>
+      <div>
+        <div class="sidebar-section-toggle flex items-center justify-between p-3 my-1 rounded-lg cursor-pointer hover:bg-gray-700" data-section="prog">
+          <div class="flex items-center">
+            <span class="sidebar-icon">&#128196;</span>
+            <span class="ml-4 font-semibold text-sm">Program & Proposal Mgt.</span>
+          </div>
+          <span class="sidebar-chevron" data-section="prog">&#9654;</span>
+        </div>
+        <div class="sidebar-section-content pl-8 text-gray-300" id="prog-section" style="display:none;">
+          <a href="#all-programs" class="sidebar-link flex items-center p-3 my-1 rounded-lg hover:bg-gray-700"><span class="text-sm">All Programs List</span></a>
+          <a href="#review-proposals" class="sidebar-link flex items-center p-3 my-1 rounded-lg hover:bg-gray-700"><span class="text-sm">Review Proposals</span></a>
+        </div>
+      </div>
+      <div>
+        <div class="sidebar-section-toggle flex items-center justify-between p-3 my-1 rounded-lg cursor-pointer hover:bg-gray-700" data-section="fin">
+          <div class="flex items-center">
+            <span class="sidebar-icon">&#128181;</span>
+            <span class="ml-4 font-semibold text-sm">Financial Mgt.</span>
+          </div>
+          <span class="sidebar-chevron" data-section="fin">&#9654;</span>
+        </div>
+        <div class="sidebar-section-content pl-8 text-gray-300" id="fin-section" style="display:none;">
+          <a href="#review-reports" class="sidebar-link flex items-center p-3 my-1 rounded-lg hover:bg-gray-700"><span class="text-sm">Review Financial Reports</span></a>
+        </div>
+      </div>
+      <hr class="my-4 border-gray-600"/>
+      <a href="#admin-settings" class="sidebar-link flex items-center p-3 my-1 rounded-lg hover:bg-gray-700">
+        <span class="sidebar-icon">&#9881;</span>
+        <span class="ml-4 font-semibold text-sm">Admin & System Settings</span>
+      </a>
+    </nav>
+    <div class="mt-auto pt-4 border-t border-gray-600 px-4 pb-4">
+      <a href="#logout" class="flex items-center p-3 my-1 rounded-lg hover:bg-gray-700">
+        <span class="sidebar-icon">&#x1F6AA;</span>
+        <span class="ml-4 font-semibold text-sm">Logout</span>
+      </a>
+    </div>
+  </div>
+</aside>
