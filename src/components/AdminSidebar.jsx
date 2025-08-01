@@ -74,7 +74,6 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed }) {
             </div>
             {finOpen && !isCollapsed && (
               <div className="pl-8 text-gray-300">
-                <Link to="fund-disbursement" {...scrollProps} activeClass="bg-angat-pink text-white" className={`${scrollProps.className} hover:bg-gray-700`}><span className="text-sm">Fund Disbursement</span></Link>
                 <Link to="review-reports" {...scrollProps} activeClass="bg-angat-pink text-white" className={`${scrollProps.className} hover:bg-gray-700`}><span className="text-sm">Review Financial Reports</span></Link>
               </div>
             )}
