@@ -1,7 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import SectionWrapper from '../components/SectionWrapper';
+import { getSupabaseClientAuthenticated } from '../api/supabaseClient';
 
 export default function SubmitReportSection() {
+  const [activePrograms, setActivePrograms] = useState([]);
+  
+  // Fetch active programs to populate the dropdown
+  useEffect(() => {
+    const fetchActivePrograms = async () => {
+        try {
+            const supabase = getSupabaseClientAuthenticated();
+            // Fetching programs with 'Active' status ('A')
+            const { data, error } = await supabase.get('/programs_and_projects?status=eq.A');
+            if (error) throw error;
+            setActivePrograms(data);
+        } catch (error) {
+            console.error("Error fetching active programs:", error);
+        }
+    };
+    fetchActivePrograms();
+  }, []);
+
+  // Note: The form submission logic for reports would be similar to the
+  // "Propose a New Program" section, but would likely point to a different
+  // table (e.g., 'program_reports') which is not in the provided schema.
+  // This is a placeholder for the UI and data fetching part.
+
   return (
     <SectionWrapper name="submit-report" title="Submit a Report">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -16,8 +40,13 @@ export default function SubmitReportSection() {
         <div>
             <label className="block text-sm font-bold mb-2 text-gray-700">Associated Program/Project</label>
             <select className="shadow-inner border rounded w-full py-2 px-3 text-gray-700">
-                <option>Community Kitchen for Malabon</option>
-                <option>Project Lapis: School Supplies Drive</option>
+                {activePrograms.length > 0 ? (
+                    activePrograms.map(program => (
+                        <option key={program.id} value={program.id}>{program.name}</option>
+                    ))
+                ) : (
+                    <option disabled>No active programs</option>
+                )}
             </select>
         </div>
         <div className="md:col-span-2">

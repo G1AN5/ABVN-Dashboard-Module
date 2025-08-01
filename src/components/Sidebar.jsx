@@ -1,11 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-scroll';
 import { 
   LayoutDashboard, BarChart3, FolderKanban, DollarSign, FilePlus2, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCircle2 
 } from 'lucide-react';
+import { getSupabaseClientAuthenticated } from '../api/supabaseClient';
 
 export default function Sidebar({ isCollapsed, setIsCollapsed }) {
   const [isFinancialsOpen, setIsFinancialsOpen] = useState(false);
+  const [orgData, setOrgData] = useState({ name: 'Loading...', email: '...' });
+
+  useEffect(() => {
+    const fetchOrgData = async () => {
+      try {
+        const sessionData = JSON.parse(localStorage.getItem('auth_session'));
+        if (!sessionData) return;
+
+        const supabase = getSupabaseClientAuthenticated();
+        // The RLS policy ensures we can only fetch the user's own organization
+        const { data, error } = await supabase.get('/organization?select=*').limit(1).single();
+
+        if (error) throw error;
+
+        setOrgData({
+          name: data.name,
+          email: sessionData.user.email,
+        });
+      } catch (error) {
+        console.error("Error fetching organization data:", error);
+        setOrgData({ name: 'Data Error', email: 'Could not load' });
+      }
+    };
+
+    fetchOrgData();
+  }, []);
 
   const scrollProps = {
     spy: true,
@@ -27,18 +54,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
           <UserCircle2 size={isCollapsed ? 36 : 48} className="text-gray-600 flex-shrink-0" />
           {!isCollapsed && (
             <div className="ml-3 overflow-hidden">
-              {/* Added 'truncate' class to handle long text. Also added a title attribute for hover tooltip. */}
-              <p 
-                className="font-bold text-gray-800 leading-tight truncate" 
-                title="VOLUNTEER MAPUANS"
-              >
-                VOLUNTEER MAPUANS
+              <p className="font-bold text-gray-800 leading-tight truncate" title={orgData.name}>
+                {orgData.name}
               </p>
-              <p 
-                className="text-sm text-gray-600 leading-tight truncate"
-                title="volunteermapuans@mymail.mapua.edu.ph"
-              >
-                volunteermapuans@mymail.mapua.edu.ph
+              <p className="text-sm text-gray-600 leading-tight truncate" title={orgData.email}>
+                {orgData.email}
               </p>
             </div>
           )}
@@ -59,10 +79,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
           </Link>
           
           <div>
-            <div 
-              onClick={() => setIsFinancialsOpen(!isFinancialsOpen)} 
-              className="flex items-center justify-between p-3 my-1 rounded-lg cursor-pointer hover:bg-sidebar-lighter"
-            >
+            <div onClick={() => setIsFinancialsOpen(!isFinancialsOpen)} className="flex items-center justify-between p-3 my-1 rounded-lg cursor-pointer hover:bg-sidebar-lighter">
               <div className="flex items-center">
                 <DollarSign size={20} className="flex-shrink-0" />
                 {!isCollapsed && <span className="ml-4 font-semibold text-sm">Financials & Reporting</span>}
