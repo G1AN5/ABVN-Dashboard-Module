@@ -1,47 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-scroll';
-import { 
-  LayoutDashboard, BarChart3, FolderKanban, DollarSign, FilePlus2, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCircle2 
+import {
+  LayoutDashboard, BarChart3, FolderKanban, DollarSign, FilePlus2, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCircle2
 } from 'lucide-react';
-import { getSupabaseClientAuthenticated } from '../api/supabaseClient';
+import { createClient } from '@supabase/supabase-js'; // We need the official client to get user data
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export default function Sidebar({ isCollapsed, setIsCollapsed }) {
   const [isFinancialsOpen, setIsFinancialsOpen] = useState(false);
-  const [orgData, setOrgData] = useState({ name: 'Loading...', email: '...' });
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const fetchOrgData = async () => {
-      try {
-        const sessionData = JSON.parse(localStorage.getItem('auth_session'));
-        if (!sessionData) return;
-
-        const supabase = getSupabaseClientAuthenticated();
-        // The RLS policy ensures we can only fetch the user's own organization
-        const { data, error } = await supabase.get('/organization?select=*').limit(1).single();
-
-        if (error) throw error;
-
-        setOrgData({
-          name: data.name,
-          email: sessionData.user.email,
+    const fetchUser = async () => {
+      const sessionData = localStorage.getItem('auth_session');
+      if (sessionData) {
+        const session = JSON.parse(sessionData);
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: { Authorization: `Bearer ${session.access_token}` } }
         });
-      } catch (error) {
-        console.error("Error fetching organization data:", error);
-        setOrgData({ name: 'Data Error', email: 'Could not load' });
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
       }
     };
-
-    fetchOrgData();
+    fetchUser();
   }, []);
+
 
   const scrollProps = {
     spy: true,
     smooth: true,
-    offset: -110, 
+    offset: -110,
     duration: 500,
     className: "flex items-center p-3 my-1 rounded-lg cursor-pointer transition-colors duration-200",
     activeClass: "bg-angat-blue text-white shadow-lg"
   };
+
+  const organizationName = user?.user_metadata?.organization_name || "Organization User";
+  const userEmail = user?.email || "loading...";
 
   return (
     <aside className={`bg-sidebar-light fixed top-0 h-screen transition-all duration-300 ease-in-out z-30 ${isCollapsed ? 'w-20' : 'w-64'}`}>
@@ -54,11 +51,17 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
           <UserCircle2 size={isCollapsed ? 36 : 48} className="text-gray-600 flex-shrink-0" />
           {!isCollapsed && (
             <div className="ml-3 overflow-hidden">
-              <p className="font-bold text-gray-800 leading-tight truncate" title={orgData.name}>
-                {orgData.name}
+              <p
+                className="font-bold text-gray-800 leading-tight truncate"
+                title={organizationName}
+              >
+                {organizationName}
               </p>
-              <p className="text-sm text-gray-600 leading-tight truncate" title={orgData.email}>
-                {orgData.email}
+              <p
+                className="text-sm text-gray-600 leading-tight truncate"
+                title={userEmail}
+              >
+                {userEmail}
               </p>
             </div>
           )}
@@ -77,9 +80,12 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
             <FolderKanban size={20} className="flex-shrink-0" />
             {!isCollapsed && <span className="ml-4 font-semibold text-sm">Programs & Projects</span>}
           </Link>
-          
+
           <div>
-            <div onClick={() => setIsFinancialsOpen(!isFinancialsOpen)} className="flex items-center justify-between p-3 my-1 rounded-lg cursor-pointer hover:bg-sidebar-lighter">
+            <div
+              onClick={() => setIsFinancialsOpen(!isFinancialsOpen)}
+              className="flex items-center justify-between p-3 my-1 rounded-lg cursor-pointer hover:bg-sidebar-lighter"
+            >
               <div className="flex items-center">
                 <DollarSign size={20} className="flex-shrink-0" />
                 {!isCollapsed && <span className="ml-4 font-semibold text-sm">Financials & Reporting</span>}
@@ -94,7 +100,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                 </Link>
                 <Link to="financial-report-form" {...scrollProps} className={`${scrollProps.className} hover:bg-sidebar-lighter`}>
                   <FilePlus2 size={18} className="flex-shrink-0" />
-                  <span className="ml-4 text-sm">Financial Report Form</span>
+                  <span className="ml-4 text-sm">Flagged Reports</span>
                 </Link>
                 <Link to="report-history" {...scrollProps} className={`${scrollProps.className} hover:bg-sidebar-lighter`}>
                   <BarChart3 size={18} className="flex-shrink-0" />
@@ -112,7 +118,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
             <FileText size={20} className="flex-shrink-0" />
             {!isCollapsed && <span className="ml-4 font-semibold text-sm">Submit a Report</span>}
           </Link>
-          
+
           <hr className="my-4 border-gray-300"/>
 
           <Link to="edit-profile" {...scrollProps} className={`${scrollProps.className} hover:bg-sidebar-lighter`}>

@@ -1,20 +1,10 @@
 import axios from 'axios';
-import { createClient } from '@supabase/supabase-js'; // Import the official client
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// This client is for reading public data (if any)
-const supabase = axios.create({
-  baseURL: `${supabaseUrl}/rest/v1`,
-  headers: {
-    'apikey': supabaseAnonKey,
-    'Authorization': `Bearer ${supabaseAnonKey}`,
-    'Content-Type': 'application/json',
-  }
-});
-
-// This client is for calling Edge Functions (like login)
+// This client is for calling the 'user' Edge Function (login, registration, approval)
 const supabaseFunctions = axios.create({
     baseURL: `${supabaseUrl}/functions/v1/user`,
     headers: {
@@ -23,22 +13,27 @@ const supabaseFunctions = axios.create({
     }
 });
 
-// This client is for making authenticated API calls to your database tables
-const getSupabaseClientAuthenticated = () => {
+// This is the main authenticated client for ALL other API calls (programs, reports, etc.)
+// It points to the 'programs-and-projects' edge function.
+const getSupabaseApiAuthenticated = () => {
   const session = JSON.parse(localStorage.getItem('auth_session'));
   const token = session?.access_token;
 
+  if (!token) {
+    console.error("No auth token found in localStorage.");
+    // This will cause API calls to fail, prompting a re-login.
+  }
+
   return axios.create({
-    baseURL: `${supabaseUrl}/rest/v1`,
+    baseURL: `${supabaseUrl}/functions/v1/programs-and-projects`,
     headers: {
       'apikey': supabaseAnonKey,
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
     }
   });
 };
 
-// This client is for making authenticated calls to your Edge Functions
+// This client is for making authenticated calls to the 'user' Edge Function (e.g., approve/reject)
 const getSupabaseFunctionsAuthenticated = () => {
   const session = JSON.parse(localStorage.getItem('auth_session'));
   const token = session?.access_token;
@@ -53,12 +48,11 @@ const getSupabaseFunctionsAuthenticated = () => {
   });
 };
 
-// NEW: Create an authenticated Supabase JS client for storage operations
+// This client uses the official JS library, primarily for storage operations like getting signed URLs.
 const getSupabaseStorageClient = () => {
     const session = JSON.parse(localStorage.getItem('auth_session'));
     const token = session?.access_token;
 
-    // We must use the official createClient for storage, passing the token
     return createClient(supabaseUrl, supabaseAnonKey, {
         global: {
             headers: { Authorization: `Bearer ${token}` }
@@ -66,5 +60,4 @@ const getSupabaseStorageClient = () => {
     });
 }
 
-
-export { supabase, supabaseFunctions, getSupabaseClientAuthenticated, getSupabaseFunctionsAuthenticated, getSupabaseStorageClient };
+export { supabaseFunctions, getSupabaseApiAuthenticated, getSupabaseFunctionsAuthenticated, getSupabaseStorageClient };

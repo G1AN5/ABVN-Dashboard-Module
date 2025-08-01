@@ -1,23 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Element } from 'react-scroll';
 import SectionWrapper from '../../components/SectionWrapper';
+import { getSupabaseApiAuthenticated, getSupabaseStorageClient } from '../../api/supabaseClient';
 
-const ProgramRow = ({ title, org, status, budget }) => {
+const ProgramRow = ({ name, organization, status, budget }) => {
   const statusColor = {
     'Active': 'bg-green-100 text-green-800',
-    'Pending Approval': 'bg-yellow-100 text-yellow-800',
+    'Rejected': 'bg-red-100 text-red-800',
     'Completed': 'bg-blue-100 text-blue-800',
+    'P': 'bg-yellow-100 text-yellow-800',
   };
+  const statusText = {
+      'P': 'Pending Approval',
+      'Active': 'Active',
+      'Rejected': 'Rejected',
+      'Completed': 'Completed'
+  }
   return (
     <tr className="border-b hover:bg-gray-50">
-      <td className="py-3 px-6 font-semibold text-gray-700">{title}</td>
-      <td className="py-3 px-6 text-gray-600">{org}</td>
+      <td className="py-3 px-6 font-semibold text-gray-700">{name}</td>
+      <td className="py-3 px-6 text-gray-600">{organization?.name || 'N/A'}</td>
       <td className="py-3 px-6">
         <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusColor[status]}`}>
-          {status}
+          {statusText[status] || status}
         </span>
       </td>
-      <td className="py-3 px-6 text-right font-mono text-gray-700">{budget}</td>
+      <td className="py-3 px-6 text-right font-mono text-gray-700">{parseFloat(budget).toFixed(2)}</td>
       <td className="py-3 px-6 text-right">
         <button className="text-angat-blue hover:underline text-xs font-bold">View Details</button>
       </td>
@@ -26,43 +34,113 @@ const ProgramRow = ({ title, org, status, budget }) => {
 };
 
 export default function ProgramManagementSection() {
+    const [allPrograms, setAllPrograms] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Derived state: automatically filters allPrograms to find pending ones
+    const pendingProposals = allPrograms.filter(p => p.status === 'P');
+
+    const fetchPrograms = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const api = getSupabaseApiAuthenticated();
+            const { data, error: reqError } = await api.get('/admin/all');
+            if (reqError) throw reqError;
+            setAllPrograms(data);
+        } catch (err) {
+            console.error("Error fetching programs:", err);
+            setError("Could not fetch programs.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPrograms();
+    }, []);
+
+    const handleUpdateProposal = async (proposalId, newStatus) => {
+        try {
+            const api = getSupabaseApiAuthenticated();
+            await api.post(`/admin/proposals/${proposalId}`, { status: newStatus });
+            alert(`Proposal has been ${newStatus.toLowerCase()}!`);
+            // Refresh the list to show the change
+            fetchPrograms();
+        } catch (err) {
+            console.error(`Error updating proposal:`, err);
+            alert(`Failed to update proposal status.`);
+        }
+    };
+
+    const handleViewProposal = async (filePath) => {
+        if (!filePath) {
+            alert("No proposal document attached to this program.");
+            return;
+        }
+        try {
+            const storageClient = getSupabaseStorageClient();
+            const { data, error } = await storageClient
+                .storage
+                .from('programsandprojects')
+                .createSignedUrl(filePath, 3600); // URL valid for 1 hour
+
+            if (error) throw error;
+            window.open(data.signedUrl, '_blank');
+        } catch (err) {
+            console.error("Error creating signed URL:", err);
+            alert("Could not open the proposal document.");
+        }
+    };
+
   return (
     <>
       <Element name="all-programs">
         <SectionWrapper name="all-programs" title="All Programs & Projects List">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-gray-100 text-gray-600 uppercase">
-                <tr>
-                  <th className="py-3 px-6">Program Title</th>
-                  <th className="py-3 px-6">Organization</th>
-                  <th className="py-3 px-6">Status</th>
-                  <th className="py-3 px-6 text-right">Budget (PHP)</th>
-                  <th className="py-3 px-6"></th>
-                </tr>
-              </thead>
-              <tbody className="bg-white">
-                <ProgramRow title="Community Kitchen for Malabon" org="Bayanihan Org." status="Active" budget="150,000.00" />
-                <ProgramRow title="Project Lapis: School Supplies Drive" org="Tulong Kabataan" status="Active" budget="50,000.00" />
-                <ProgramRow title="Coastal Cleanup Initiative" org="Bayanihan Org." status="Completed" budget="25,000.00" />
-                <ProgramRow title="Digital Literacy for Seniors" org="Tulong Kabataan" status="Pending Approval" budget="75,000.00" />
-              </tbody>
-            </table>
-          </div>
+          {loading && <p className="text-center p-4">Loading programs...</p>}
+          {error && <p className="text-center p-4 text-red-500">{error}</p>}
+          {!loading && allPrograms.length === 0 && <p className="text-center p-4 text-gray-500">No programs found.</p>}
+          {!loading && allPrograms.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-100 text-gray-600 uppercase">
+                  <tr>
+                    <th className="py-3 px-6">Program Title</th>
+                    <th className="py-3 px-6">Organization</th>
+                    <th className="py-3 px-6">Status</th>
+                    <th className="py-3 px-6 text-right">Budget (PHP)</th>
+                    <th className="py-3 px-6"></th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
+                  {allPrograms.map(program => (
+                      <ProgramRow key={program.id} {...program} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </SectionWrapper>
       </Element>
       <Element name="review-proposals">
         <SectionWrapper name="review-proposals" title="Review Program Proposals">
-          <div className="bg-blue-50 border-l-4 border-angat-blue p-4 rounded-r-lg">
-            <h3 className="font-bold">Digital Literacy for Seniors</h3>
-            <p className="text-sm text-gray-600">Proposed by: <span className="font-semibold">Tulong Kabataan Foundation</span></p>
-            <p className="text-sm text-gray-700 mt-1">A proposal to provide basic computer and internet skills training to 100 senior citizens. Budget request: PHP 75,000.</p>
-            <div className="mt-4 flex space-x-4">
-              <button className="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600">Approve</button>
-              <button className="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600">Reject</button>
-              <button className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">View Full Proposal</button>
-            </div>
-          </div>
+            {loading && <p className="text-center p-4">Loading proposals...</p>}
+            {!loading && pendingProposals.length === 0 && (
+                <p className="text-center p-4 text-gray-500">No new proposals to review.</p>
+            )}
+            {!loading && pendingProposals.map(proposal => (
+                <div key={proposal.id} className="bg-blue-50 border-l-4 border-angat-blue p-4 rounded-r-lg mb-4">
+                    <h3 className="font-bold">{proposal.name}</h3>
+                    <p className="text-sm text-gray-600">Proposed by: <span className="font-semibold">{proposal.organization?.name || 'Unknown Org'}</span></p>
+                    <p className="text-sm text-gray-700 mt-1">A proposal for {proposal.beneficiaries} beneficiaries. Budget request: PHP {parseFloat(proposal.budget).toFixed(2)}.</p>
+                    <div className="mt-4 flex space-x-4">
+                    <button onClick={() => handleUpdateProposal(proposal.id, 'Active')} className="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600">Approve</button>
+                    <button onClick={() => handleUpdateProposal(proposal.id, 'Rejected')} className="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600">Reject</button>
+                    <button onClick={() => handleViewProposal(proposal.proposal_document)} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">View Full Proposal</button>
+                    </div>
+                </div>
+            ))}
         </SectionWrapper>
       </Element>
     </>

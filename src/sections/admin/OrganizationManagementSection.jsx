@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Element } from 'react-scroll';
 import SectionWrapper from '../../components/SectionWrapper';
-// Import the new storage client
-import { getSupabaseClientAuthenticated, getSupabaseFunctionsAuthenticated, getSupabaseStorageClient } from '../../api/supabaseClient';
+// Correctly import the necessary clients
+import { getSupabaseFunctionsAuthenticated, getSupabaseStorageClient, getSupabaseApiAuthenticated } from '../../api/supabaseClient';
 import { X, FileText, Download } from 'lucide-react';
 
-// Modal component for viewing documents
 const ViewDocumentsModal = ({ orgName, onClose }) => {
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,17 +22,13 @@ const ViewDocumentsModal = ({ orgName, onClose }) => {
                     setLoading(false);
                     return;
                 }
-
-                // FIX: Use the new, correct storage client to generate URLs
                 const supabaseStorage = getSupabaseStorageClient();
-                const signedUrlPromises = fileList.map(file => 
+                const signedUrlPromises = fileList.map(file =>
                     supabaseStorage.storage
                         .from('registrationrequestfiles')
-                        .createSignedUrl(`${orgName}/${file.name}`, 3600) // URL valid for 1 hour
+                        .createSignedUrl(`${orgName}/${file.name}`, 3600)
                 );
-                
                 const signedUrlResults = await Promise.all(signedUrlPromises);
-
                 const filesWithUrls = signedUrlResults.map((result, index) => {
                     if (result.error) {
                         console.error(`Error creating signed URL for ${fileList[index].name}:`, result.error);
@@ -69,9 +64,9 @@ const ViewDocumentsModal = ({ orgName, onClose }) => {
                     <ul className="space-y-2 max-h-96 overflow-y-auto">
                         {files.length > 0 ? files.map(file => (
                             <li key={file.name}>
-                                <a 
-                                    href={file.url} 
-                                    target="_blank" 
+                                <a
+                                    href={file.url}
+                                    target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center justify-between p-3 rounded-md bg-gray-50 hover:bg-angat-blue hover:text-white transition-colors group"
                                 >
@@ -111,28 +106,45 @@ const OrgRow = ({ name, contact, status }) => {
 
 export default function OrganizationManagementSection() {
   const [requests, setRequests] = useState([]);
+  const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedOrg, setSelectedOrg] = useState(null);
 
   const fetchRequests = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const supabase = getSupabaseClientAuthenticated();
-      const { data, error } = await supabase.get('/organization_registration_requests');
+      // This uses the 'user' function client, which is correct for this call
+      const supabaseFunctions = getSupabaseFunctionsAuthenticated();
+      const { data, error } = await supabaseFunctions.get('/organization_registration_requests');
       if (error) throw error;
       setRequests(data);
     } catch (err) {
       console.error("Error fetching requests:", err);
-      setError("Could not fetch registration requests. Please ensure you are logged in as an admin.");
-    } finally {
-      setLoading(false);
+      setError("Could not fetch registration requests.");
+    }
+  };
+
+  const fetchOrganizations = async () => {
+    try {
+        // Use the new, correct API client
+        const api = getSupabaseApiAuthenticated();
+        const { data, error } = await api.get('/admin/organizations');
+        if (error) throw error;
+        setOrganizations(data);
+    } catch (err) {
+        console.error("Error fetching organizations:", err);
+        setError("Could not fetch partner organizations.");
     }
   };
 
   useEffect(() => {
-    fetchRequests();
+    const loadData = async () => {
+        setLoading(true);
+        setError(null);
+        await Promise.all([fetchRequests(), fetchOrganizations()]);
+        setLoading(false);
+    };
+    loadData();
   }, []);
 
   const handleApprove = async (requestId) => {
@@ -140,7 +152,9 @@ export default function OrganizationManagementSection() {
         const supabaseFunctions = getSupabaseFunctionsAuthenticated();
         await supabaseFunctions.post('/approve-registration', { request_id: requestId });
         alert('Organization Approved! The user can now log in.');
+        // Refetch both lists after approval
         fetchRequests();
+        fetchOrganizations();
     } catch (err) {
         console.error("Approval error:", err);
         alert(`Failed to approve organization: ${err.response?.data?.message || err.message}`);
@@ -167,22 +181,26 @@ export default function OrganizationManagementSection() {
 
       <Element name="all-orgs">
         <SectionWrapper name="all-orgs" title="All Partner Organizations">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-100 text-gray-600 uppercase"><tr><th className="py-3 px-6">Organization Name</th><th className="py-3 px-6">Contact Person</th><th className="py-3 px-6">Status</th><th className="py-3 px-6"></th></tr></thead>
-            <tbody>
-              <OrgRow name="Bayanihan Para sa Kinabukasan Org." contact="Juan dela Cruz" status="Approved" />
-              <OrgRow name="Tulong Kabataan Foundation" contact="Maria Clara" status="Approved" />
-              <OrgRow name="Pag-asa Youth Movement" contact="Jose Rizal" status="Pending" />
-              <OrgRow name="Community Builders Inc." contact="Andres Bonifacio" status="Rejected" />
-            </tbody>
-          </table>
+          {loading && <p>Loading organizations...</p>}
+          {error && <p className="text-red-500">{error}</p>}
+          {!loading && organizations.length === 0 && <p className="text-gray-500 text-center">No partner organizations found.</p>}
+          {!loading && organizations.length > 0 && (
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-100 text-gray-600 uppercase"><tr><th className="py-3 px-6">Organization Name</th><th className="py-3 px-6">Contact Person</th><th className="py-3 px-6">Status</th><th className="py-3 px-6"></th></tr></thead>
+              <tbody>
+                {organizations.map(org => (
+                  <OrgRow key={org.id} name={org.name} contact={org.contact_persons?.name || 'N/A'} status="Approved" />
+                ))}
+              </tbody>
+            </table>
+          )}
         </SectionWrapper>
       </Element>
       <Element name="review-apps">
         <SectionWrapper name="review-apps" title="Review New Applications">
           {loading && <p>Loading applications...</p>}
           {error && <p className="text-red-500">{error}</p>}
-          
+
           {!loading && !error && requests.length === 0 && (
             <p className="text-gray-500 text-center">No new applications to review.</p>
           )}
