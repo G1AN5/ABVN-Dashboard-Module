@@ -1,33 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { Element } from 'react-scroll';
 import SectionWrapper from '../../components/SectionWrapper';
-import { getSupabaseClientAuthenticated, getSupabaseFunctionsAuthenticated } from '../../api/supabaseClient';
-import { X, FileText } from 'lucide-react';
+// Import the new storage client
+import { getSupabaseClientAuthenticated, getSupabaseFunctionsAuthenticated, getSupabaseStorageClient } from '../../api/supabaseClient';
+import { X, FileText, Download } from 'lucide-react';
 
-// NEW: Modal component for viewing documents
+// Modal component for viewing documents
 const ViewDocumentsModal = ({ orgName, onClose }) => {
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchFiles = async () => {
             try {
                 const supabaseFunctions = getSupabaseFunctionsAuthenticated();
-                const { data } = await supabaseFunctions.post('/list-files', { org_name: orgName });
-                
-                // Create signed URLs for each file to make them viewable
-                const supabase = getSupabaseClientAuthenticated();
-                const fileUrls = await Promise.all(
-                    data.map(async (file) => {
-                        const { data: urlData } = await supabase.storage
-                            .from('registrationrequestfiles')
-                            .createSignedUrl(`${orgName}/${file.name}`, 60); // URL is valid for 60 seconds
-                        return { name: file.name, url: urlData.signedUrl };
-                    })
+                const { data: fileList, error: listError } = await supabaseFunctions.post('/list-files', { org_name: orgName });
+
+                if (listError) throw listError;
+                if (!fileList || fileList.length === 0) {
+                    setFiles([]);
+                    setLoading(false);
+                    return;
+                }
+
+                // FIX: Use the new, correct storage client to generate URLs
+                const supabaseStorage = getSupabaseStorageClient();
+                const signedUrlPromises = fileList.map(file => 
+                    supabaseStorage.storage
+                        .from('registrationrequestfiles')
+                        .createSignedUrl(`${orgName}/${file.name}`, 3600) // URL valid for 1 hour
                 );
-                setFiles(fileUrls);
-            } catch (error) {
-                console.error("Error fetching files:", error);
+                
+                const signedUrlResults = await Promise.all(signedUrlPromises);
+
+                const filesWithUrls = signedUrlResults.map((result, index) => {
+                    if (result.error) {
+                        console.error(`Error creating signed URL for ${fileList[index].name}:`, result.error);
+                        return null;
+                    }
+                    return { name: fileList[index].name, url: result.data.signedUrl };
+                }).filter(Boolean);
+
+                setFiles(filesWithUrls);
+
+            } catch (err) {
+                console.error("Error fetching files:", err);
+                setError("Could not load documents.");
             } finally {
                 setLoading(false);
             }
@@ -36,7 +55,7 @@ const ViewDocumentsModal = ({ orgName, onClose }) => {
     }, [orgName]);
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-lg">
                 <div className="flex justify-between items-center border-b pb-3 mb-4">
                     <h3 className="text-2xl font-bold text-gray-800">Documents for {orgName}</h3>
@@ -44,23 +63,26 @@ const ViewDocumentsModal = ({ orgName, onClose }) => {
                         <X size={24} />
                     </button>
                 </div>
-                {loading ? (
-                    <p>Loading documents...</p>
-                ) : (
-                    <ul className="space-y-2">
+                {loading && <p>Loading documents...</p>}
+                {error && <p className="text-red-500">{error}</p>}
+                {!loading && !error && (
+                    <ul className="space-y-2 max-h-96 overflow-y-auto">
                         {files.length > 0 ? files.map(file => (
                             <li key={file.name}>
                                 <a 
                                     href={file.url} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="flex items-center p-2 rounded-md bg-gray-100 hover:bg-angat-blue hover:text-white transition-colors"
+                                    className="flex items-center justify-between p-3 rounded-md bg-gray-50 hover:bg-angat-blue hover:text-white transition-colors group"
                                 >
-                                    <FileText size={20} className="mr-3" />
-                                    <span>{file.name}</span>
+                                    <div className="flex items-center">
+                                        <FileText size={20} className="mr-3 flex-shrink-0" />
+                                        <span className="truncate">{file.name}</span>
+                                    </div>
+                                    <Download size={20} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </a>
                             </li>
-                        )) : <p>No documents were uploaded.</p>}
+                        )) : <p className="text-gray-500 text-center py-4">No documents were uploaded for this application.</p>}
                     </ul>
                 )}
             </div>
@@ -91,7 +113,7 @@ export default function OrganizationManagementSection() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedOrg, setSelectedOrg] = useState(null); // State to manage the modal
+  const [selectedOrg, setSelectedOrg] = useState(null);
 
   const fetchRequests = async () => {
     try {
@@ -121,7 +143,7 @@ export default function OrganizationManagementSection() {
         fetchRequests();
     } catch (err) {
         console.error("Approval error:", err);
-        alert('Failed to approve organization.');
+        alert(`Failed to approve organization: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -141,7 +163,6 @@ export default function OrganizationManagementSection() {
 
   return (
     <>
-      {/* If an org is selected, show the modal */}
       {selectedOrg && <ViewDocumentsModal orgName={selectedOrg} onClose={() => setSelectedOrg(null)} />}
 
       <Element name="all-orgs">
@@ -176,7 +197,6 @@ export default function OrganizationManagementSection() {
               <div className="mt-4 flex space-x-4">
                 <button onClick={() => handleApprove(req.id)} className="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600">Approve</button>
                 <button onClick={() => handleReject(req.id)} className="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600">Reject</button>
-                {/* Set the selected org to open the modal */}
                 <button onClick={() => setSelectedOrg(req.name)} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300">View Documents</button>
               </div>
             </div>
