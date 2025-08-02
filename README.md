@@ -1,12 +1,12 @@
-# React + Vite
+# Angat Bayanihan Volunteer Network Dashboard Module
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a web app version of the dashboard module to be integrated in AngatBuhay's existing website. Its purpose is to help make the management of partner volunteer organizations more efficient such as for registering of user volunteer organizations, their approval by the admin and the users being able to submit and change reports and other details to the admin.
 
-Currently, two official plugins are available:
+## Vercel Deployment Link for the Web app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+https://abvn-dashboard-module.vercel.app 
 
-## Expanding the ESLint configuration
+Working admin credential for using the admin dashboard and testing (Such as approving registered users to access user dashboard):
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Email - admin@angatbuhay.dev
+Password - G12345
