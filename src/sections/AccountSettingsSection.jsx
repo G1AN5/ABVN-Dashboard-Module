@@ -18,7 +18,7 @@ const InputField = ({ label, placeholder, type = 'text', name, value, onChange, 
     </div>
 );
 
-export default function AccountSettingsSection() {
+export default function AccountSettingsSection({ onProfileUpdate }) {
     // State for the Profile Form
     const [profile, setProfile] = useState({
         organization_name: '',
@@ -82,6 +82,9 @@ export default function AccountSettingsSection() {
             const api = getSupabaseApiAuthenticated();
             await api.post('/organization-profile', profile);
             setProfileSuccess("Profile updated successfully!");
+            if (onProfileUpdate) {
+                onProfileUpdate();
+            }
         } catch (err) {
             console.error("Error updating profile:", err);
             setProfileError("Failed to update profile. Please try again.");

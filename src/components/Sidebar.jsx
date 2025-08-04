@@ -1,32 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-scroll';
 import {
   LayoutDashboard, BarChart3, FolderKanban, DollarSign, FilePlus2, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCircle2
 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js'; // We need the official client to get user data
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-export default function Sidebar({ isCollapsed, setIsCollapsed }) {
+// The Sidebar now receives both userInfo and userEmail as props
+export default function Sidebar({ isCollapsed, setIsCollapsed, userInfo, userEmail }) {
   const [isFinancialsOpen, setIsFinancialsOpen] = useState(false);
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const sessionData = localStorage.getItem('auth_session');
-      if (sessionData) {
-        const session = JSON.parse(sessionData);
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-          global: { headers: { Authorization: `Bearer ${session.access_token}` } }
-        });
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-      }
-    };
-    fetchUser();
-  }, []);
-
 
   const scrollProps = {
     spy: true,
@@ -37,8 +17,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
     activeClass: "bg-angat-blue text-white shadow-lg"
   };
 
-  const organizationName = user?.user_metadata?.organization_name || "Organization User";
-  const userEmail = user?.email || "loading...";
+  const organizationName = userInfo?.name || "Loading...";
 
   return (
     <aside className={`bg-sidebar-light fixed top-0 h-screen transition-all duration-300 ease-in-out z-30 ${isCollapsed ? 'w-20' : 'w-64'}`}>
@@ -57,6 +36,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
               >
                 {organizationName}
               </p>
+              {/* Display the userEmail prop here */}
               <p
                 className="text-sm text-gray-600 leading-tight truncate"
                 title={userEmail}
@@ -100,7 +80,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }) {
                 </Link>
                 <Link to="financial-report-form" {...scrollProps} className={`${scrollProps.className} hover:bg-sidebar-lighter`}>
                   <FilePlus2 size={18} className="flex-shrink-0" />
-                  <span className="ml-4 text-sm">Flagged Reports</span>
+                  <span className="ml-4 text-sm">Reports Requiring Attention</span>
                 </Link>
                 <Link to="report-history" {...scrollProps} className={`${scrollProps.className} hover:bg-sidebar-lighter`}>
                   <BarChart3 size={18} className="flex-shrink-0" />

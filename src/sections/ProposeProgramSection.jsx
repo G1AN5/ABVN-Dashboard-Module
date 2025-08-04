@@ -113,8 +113,6 @@ export default function ProposeProgramSection() {
         {success && <p className="text-green-600 text-center mt-4">{success}</p>}
 
         <div className="flex justify-end space-x-4 mt-8">
-            <button type="button" className="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600">Follow-Up on Existing</button>
-            <button type="button" className="bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-yellow-600">Edit Draft</button>
             <button type="submit" disabled={loading} className="bg-angat-pink text-white font-bold py-2 px-4 rounded-lg hover:opacity-90 disabled:opacity-50">
                 {loading ? 'Submitting...' : 'Propose'}
             </button>
